@@ -274,7 +274,8 @@ endif
 
 ifeq ($(MODEM_APP),RELAY_TX)
 APP_C_SOURCES += \
-	main_examples/main_periodical_uplink_relay_tx.c
+	main_examples/main_periodical_uplink_relay_tx.c\
+	DHT11_lib/Src/DHT11.c
 
 LBM_BUILD_OPTIONS += RELAY_TX_ENABLE=yes
 endif
@@ -331,7 +332,8 @@ COMMON_C_INCLUDES +=  \
 	-Iradio_hal\
 	-Ismtc_modem_hal\
 	-I$(LORA_BASICS_MODEM)/smtc_modem_api\
-	-I$(LORA_BASICS_MODEM)/smtc_modem_hal
+	-I$(LORA_BASICS_MODEM)/smtc_modem_hal\
+	-IDHT11_lib/Inc
 
 #-----------------------------------------------------------------------------
 # Gather everything

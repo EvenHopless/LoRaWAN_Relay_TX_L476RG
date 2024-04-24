@@ -1,4 +1,4 @@
-#include "dht11.h"
+#include "DHT11.h"
 #include "stm32l4xx_hal.h"
 
 void HAL_Delay_us(uint32_t nus)
@@ -14,7 +14,6 @@ HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
 void GPIO_mode_out()
 {
-	//hal_gpio_init_out ( PB_13, )
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	
 	//GPIO_InitStruct.Pin = GPIO_PIN_0;
@@ -27,7 +26,6 @@ void GPIO_mode_out()
 
 void GPIO_mode_in()
 {
-	//hal_gpio_init_in ( PB_13, GPIO_PULLUP,  );
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	
 	//GPIO_InitStruct.Pin = GPIO_PIN_0;
