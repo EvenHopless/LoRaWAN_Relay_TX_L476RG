@@ -49,6 +49,7 @@
 #include "smtc_hal_dbg_trace.h"
 
 #include "example_options.h"
+#include "DHT11.h"
 
 #include "smtc_hal_mcu.h"
 #include "smtc_hal_gpio.h"
@@ -177,6 +178,8 @@ static uint8_t                  rx_remaining    = 0;      // Remaining downlink 
 
 static volatile bool user_button_is_press = false;  // Flag for button status
 static uint32_t      uplink_counter       = 0;      // uplink raising counter
+static uint8_t       temperature          = 0;      // uplink temperature variable
+static uint8_t       humidity             = 0;      // uplink humidity variable
 
 /**
  * @brief Internal credentials
@@ -210,6 +213,18 @@ static void user_button_callback( void* context );
  */
 static void send_uplink_counter_on_port( uint8_t port );
 
+// EHOP added uplink fuction for DHT11
+/**
+ * @brief Send the 32bits DHT11 uplink on chosen port
+ */
+static void send_uplink_DHT11_on_port( uint8_t port );
+
+// EHOP added uplink fuction for DHT11
+/**
+ * @brief Test function for GPIO pins
+ */
+static void gpio_led_test_func();
+
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
@@ -241,8 +256,9 @@ void main_periodical_uplink_relay_tx( void )
     };
     hal_gpio_init_in( EXTI_BUTTON, BSP_GPIO_PULL_MODE_NONE, BSP_GPIO_IRQ_MODE_FALLING, &nucleo_blue_button );
 
-    // EHOP 23.04.24: Configure LED as Output
-    hal_gpio_init_out( PB_13, 0);
+    // EHOP 23.04.24: Configure PB_13 as Output
+    //hal_gpio_init_out( PB_13, 0);
+    
 
     // Init done: enable interruption
     hal_mcu_enable_irq( );
@@ -262,7 +278,8 @@ void main_periodical_uplink_relay_tx( void )
             if( ( status_mask & SMTC_MODEM_STATUS_JOINED ) == SMTC_MODEM_STATUS_JOINED )
             {
                 // Send the uplink counter on port 102
-                send_uplink_counter_on_port( 102 );
+                //send_uplink_counter_on_port( 102 );
+                send_uplink_DHT11_on_port( 102 );
             }
         }
 
@@ -328,7 +345,8 @@ static void modem_event_callback( void )
         case SMTC_MODEM_EVENT_ALARM:
             SMTC_HAL_TRACE_INFO( "Event received: ALARM\n" );
             // Send periodical uplink on port 101
-            send_uplink_counter_on_port( 101 );
+            //send_uplink_counter_on_port( 101 );
+            send_uplink_DHT11_on_port( 101 );
             // Restart periodical uplink alarm
             ASSERT_SMTC_MODEM_RC( smtc_modem_alarm_start_timer( PERIODICAL_UPLINK_DELAY_S ) );
             break;
@@ -338,7 +356,8 @@ static void modem_event_callback( void )
             SMTC_HAL_TRACE_INFO( "Modem is now joined \n" );
 
             // Send first periodical uplink on port 101
-            send_uplink_counter_on_port( 101 );
+            //send_uplink_counter_on_port( 101 );
+            send_uplink_DHT11_on_port ( 101 );
             // start periodical uplink alarm
             ASSERT_SMTC_MODEM_RC( smtc_modem_alarm_start_timer( PERIODICAL_UPLINK_DELAY_S ) );
             break;
@@ -505,6 +524,11 @@ static void send_uplink_counter_on_port( uint8_t port )
     // Increment uplink counter
     uplink_counter++;
 
+}
+
+static void gpio_led_test_func()
+{
+    // EHOP 23.04.24: Configure LED as Output
     if (hal_gpio_get_value( PB_13 ) == 0)
     {
         hal_gpio_set_value( PB_13, 1);
@@ -514,5 +538,22 @@ static void send_uplink_counter_on_port( uint8_t port )
         hal_gpio_set_value( PB_13, 0);
     }
 }
+
+static void send_uplink_DHT11_on_port( uint8_t port )
+// EHOP 23.04.24: Configure LED as Output
+{
+    // Send uplink on port xxx
+    DHT11_Read_Data(&temperature, &humidity);
+    uint8_t buff[2] = { 0 };
+    buff[0] = temperature;
+    buff[1] = humidity;
+
+    ASSERT_SMTC_MODEM_RC( smtc_modem_request_uplink( STACK_ID, port, false, buff, 2 ) );
+    SMTC_HAL_TRACE_PRINTF( "Data transmitted on port %u\n", port );
+    SMTC_HAL_TRACE_PRINTF( "Temperature %u\n", temperature );
+    SMTC_HAL_TRACE_PRINTF( "Temperature %u\n", humidity );
+
+}
+    
 
 /* --- EOF ------------------------------------------------------------------ */
