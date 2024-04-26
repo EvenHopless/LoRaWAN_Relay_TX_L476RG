@@ -229,7 +229,7 @@ static void gpio_led_test_func();
  * @brief Fuction for init of ADC1
  */
 static void MX_ADC1_Init(void);
-
+static void HAL_ADC_ConvtCpltCallback(ADC_HandleTypeDef *hadc);
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
@@ -265,7 +265,8 @@ void main_periodical_uplink_relay_tx( void )
     //hal_gpio_init_out( PB_13, 0);
     // EHOP 25.04.24: Initialize ADC1
     MX_ADC1_Init();
-    HAL_ADC_Start( &ADC_Init );
+    //HAL_ADC_Start( &ADC_Init );
+    //HAL_ADC_Start_IT( &ADC_Init );
     // Init done: enable interruption
     hal_mcu_enable_irq( );
 
@@ -274,8 +275,8 @@ void main_periodical_uplink_relay_tx( void )
     while( 1 )
     {
         // Update sensor values
-        HAL_ADC_PollForConversion( &ADC_Init, 1000);
-        readValue = HAL_ADC_GetValue( &ADC_Init );
+        //HAL_ADC_PollForConversion( &ADC_Init, 100);
+        //readValue = HAL_ADC_GetValue( &ADC_Init );
 
         // Check button
         if( user_button_is_press == true )
@@ -289,7 +290,7 @@ void main_periodical_uplink_relay_tx( void )
             {
                 // Send the uplink counter on port 102
                 // send_uplink_counter_on_port( 102 );
-                send_uplink_moisture_on_port ( 102 );
+                send_uplink_moisture_on_port( 102 );
             }
         }
 
@@ -356,7 +357,7 @@ static void modem_event_callback( void )
             SMTC_HAL_TRACE_INFO( "Event received: ALARM\n" );
             // Send periodical uplink on port 101
             // send_uplink_counter_on_port( 101 );
-            send_uplink_moisture_on_port ( 101 );
+            send_uplink_moisture_on_port( 101 );
             // Restart periodical uplink alarm
             ASSERT_SMTC_MODEM_RC( smtc_modem_alarm_start_timer( PERIODICAL_UPLINK_DELAY_S ) );
             break;
@@ -367,7 +368,7 @@ static void modem_event_callback( void )
 
             // Send first periodical uplink on port 101
             // send_uplink_counter_on_port( 101 );
-            send_uplink_moisture_on_port ( 101 );
+            send_uplink_moisture_on_port( 101 );
             // start periodical uplink alarm
             ASSERT_SMTC_MODEM_RC( smtc_modem_alarm_start_timer( PERIODICAL_UPLINK_DELAY_S ) );
             break;
@@ -375,7 +376,6 @@ static void modem_event_callback( void )
         case SMTC_MODEM_EVENT_TXDONE:
             SMTC_HAL_TRACE_INFO( "Event received: TXDONE\n" );
             SMTC_HAL_TRACE_INFO( "Transmission done \n" );
-            SMTC_HAL_TRACE_INFO( "Payload: \n", readValue );
             break;
 
         case SMTC_MODEM_EVENT_DOWNDATA:
@@ -553,6 +553,12 @@ static void gpio_led_test_func()
 static void send_uplink_moisture_on_port( uint8_t port )
 // EHOP 25.04.24: Transform and send moisture data
 {
+    //HAL_ADC_ConvtCpltCallback( &ADC_Init );
+    HAL_ADC_Start( &ADC_Init );
+    HAL_ADC_PollForConversion( &ADC_Init, 100);
+    readValue = HAL_ADC_GetValue( &ADC_Init );
+    hal_trace_print_var( "readValue: %u\n", readValue );
+    HAL_ADC_Stop( &ADC_Init );
     // Send uplink on port xxx
     uint8_t buff[2] = { 0 };
     
@@ -602,6 +608,7 @@ static void MX_ADC1_Init(void)
   ADC_Init.Init.DMAContinuousRequests = DISABLE;
   ADC_Init.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   ADC_Init.Init.OversamplingMode = DISABLE;
+  
   if (HAL_ADC_Init(&ADC_Init) != HAL_OK)
   {
     //Error_Handler();
@@ -610,27 +617,34 @@ static void MX_ADC1_Init(void)
   /** Configure the ADC multi-mode
   */
   multimode.Mode = ADC_MODE_INDEPENDENT;
-  //if (HAL_ADCEx_MultiModeConfigChannel(&ADC_Init, &multimode) != HAL_OK)
-  //{
+  if (HAL_ADCEx_MultiModeConfigChannel(&ADC_Init, &multimode) != HAL_OK)
+  {
     //Error_Handler();
-  //}
+  }
 
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_16;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_247CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
+  
   if (HAL_ADC_ConfigChannel(&ADC_Init, &sConfig) != HAL_OK)
   {
     //Error_Handler();
   }
+  
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
 
 }    
+
+void HAL_ADC_ConvtCpltCallback(ADC_HandleTypeDef* hadc) {
+  readValue = HAL_ADC_GetValue( &ADC_Init );
+  hal_trace_print_var( "readValue: %u\n", readValue );
+}
 
 /* --- EOF ------------------------------------------------------------------ */

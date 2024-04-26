@@ -37,6 +37,7 @@ BOARD_C_SOURCES = \
 	mcu_drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
 	mcu_drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
 	mcu_drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c \
+	mcu_drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c \
 	smtc_modem_hal/smtc_modem_hal.c\
 	mcu_drivers/core/STM32L4xx/system_stm32l4xx.c\
 	smtc_hal_l4/smtc_hal_flash.c\
