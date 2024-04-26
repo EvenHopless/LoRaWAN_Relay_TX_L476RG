@@ -56,7 +56,7 @@ lbm_lib/build
 lbm_examples/build_sx1261_l4
 
 # VS Code
-c_cpp_properties.json
+# c_cpp_properties.json
 
 # Secrets
-/lbm_examples/main_examples/example_options.h
+# /lbm_examples/main_examples/example_options.h

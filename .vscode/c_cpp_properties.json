@@ -1,0 +1,35 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/lbm_examples/**",
+                "${workspaceFolder}/lbm_lib/**",
+                "${workspaceFolder}/lbm_examples/smtc_hal_l4",
+                "${workspaceFolder}/lbm_lib/**",
+                "${workspaceFolder}/lbm_examples/DHT11_lib/Inc",
+                "${workspaceFolder}/lbm_examples/DHT11_lib/Src",
+                "${workspaceFolder}/lbm_examples/mcu_drivers",
+                "${workspaceFolder}/lbm_examples/mcu_drivers/core/STM32L4xx",
+                "${workspaceFolder}/lbm_examples",
+                "${workspaceFolder}/lbm_examples/mcu_drivers/STM32L4xx_HAL_Driver/Inc"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "USE_HAL_DRIVER",
+                "STM32L476xx",
+                "USE_FULL_LL_DRIVER",
+                "__CC_ARM"
+            ],
+            "windowsSdkVersion": "10.0.22621.0",
+            "compilerPath": "cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}
