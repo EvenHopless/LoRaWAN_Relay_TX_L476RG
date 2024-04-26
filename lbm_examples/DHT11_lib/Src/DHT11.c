@@ -4,6 +4,7 @@
 void HAL_Delay_us(uint32_t nus)
 {
 //?systic???1us??
+
 HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()*2/1000000);
 //??nus
 HAL_Delay(nus-1);

@@ -49,6 +49,7 @@
 #include "smtc_hal_dbg_trace.h"
 
 #include "example_options.h"
+//#include "DHT11.h"
 #include "stm32l4xx_hal.h"
 
 #include "smtc_hal_mcu.h"
@@ -177,8 +178,10 @@ static uint8_t                  rx_remaining    = 0;      // Remaining downlink 
 
 static volatile bool user_button_is_press = false;  // Flag for button status
 static uint32_t      uplink_counter       = 0;      // uplink raising counter
-static uint16_t      readValue            = 0;      // Value read from the moisture sensor
-ADC_HandleTypeDef    ADC_Init;                      // ADC type handler variable
+static uint8_t       temperature          = 0;      // uplink temperature variable
+static uint8_t       humidity             = 0;      // uplink humidity variable
+static uint16_t      readValue            = 0;      // Value read from the humidity sensor
+ADC_HandleTypeDef    ADC_Init;                      // Init of ADC type handler
 
 /**
  * @brief Internal credentials
@@ -212,9 +215,15 @@ static void user_button_callback( void* context );
  */
 static void send_uplink_counter_on_port( uint8_t port );
 
+// EHOP Send uplink fuction for DHT11
+/**
+ * @brief Send the 32bits DHT11 uplink on chosen port
+ */
+static void send_uplink_DHT11_on_port( uint8_t port );
+
 // EHOP Send uplink fuction for Humidity sensor
 /**
- * @brief Send the 16bits moisture uplink on chosen port
+ * @brief Send the 32bits DHT11 uplink on chosen port
  */
 static void send_uplink_moisture_on_port( uint8_t port );
 
@@ -241,7 +250,7 @@ static void MX_ADC1_Init(void);
  */
 void main_periodical_uplink_relay_tx( void )
 {
-    uint32_t sleep_time_ms = 0;
+    uint32_t sleep_time_ms = 60000;
 
     // Disable IRQ to avoid unwanted behavior during init
     hal_mcu_disable_irq( );
@@ -274,6 +283,7 @@ void main_periodical_uplink_relay_tx( void )
     while( 1 )
     {
         // Update sensor values
+        // DHT11_Read_Data(&temperature, &humidity);
         HAL_ADC_PollForConversion( &ADC_Init, 1000);
         readValue = HAL_ADC_GetValue( &ADC_Init );
 
@@ -289,7 +299,10 @@ void main_periodical_uplink_relay_tx( void )
             {
                 // Send the uplink counter on port 102
                 // send_uplink_counter_on_port( 102 );
+                // send_uplink_DHT11_on_port( 102 );
                 send_uplink_moisture_on_port ( 102 );
+                SMTC_HAL_TRACE_INFO( "Temperature: %u\n", temperature );
+                SMTC_HAL_TRACE_INFO( "Humidity: %u\n", humidity );
             }
         }
 
@@ -356,7 +369,10 @@ static void modem_event_callback( void )
             SMTC_HAL_TRACE_INFO( "Event received: ALARM\n" );
             // Send periodical uplink on port 101
             // send_uplink_counter_on_port( 101 );
+            // send_uplink_DHT11_on_port( 101 );
             send_uplink_moisture_on_port ( 101 );
+            SMTC_HAL_TRACE_INFO( "Temperature: %u\n", temperature );
+            SMTC_HAL_TRACE_INFO( "Humidity: %u\n", humidity );
             // Restart periodical uplink alarm
             ASSERT_SMTC_MODEM_RC( smtc_modem_alarm_start_timer( PERIODICAL_UPLINK_DELAY_S ) );
             break;
@@ -367,7 +383,10 @@ static void modem_event_callback( void )
 
             // Send first periodical uplink on port 101
             // send_uplink_counter_on_port( 101 );
+            // send_uplink_DHT11_on_port ( 101 );
             send_uplink_moisture_on_port ( 101 );
+            SMTC_HAL_TRACE_INFO( "Temperature: %u\n", temperature );
+            SMTC_HAL_TRACE_INFO( "Humidity: %u\n", humidity );
             // start periodical uplink alarm
             ASSERT_SMTC_MODEM_RC( smtc_modem_alarm_start_timer( PERIODICAL_UPLINK_DELAY_S ) );
             break;
@@ -375,7 +394,6 @@ static void modem_event_callback( void )
         case SMTC_MODEM_EVENT_TXDONE:
             SMTC_HAL_TRACE_INFO( "Event received: TXDONE\n" );
             SMTC_HAL_TRACE_INFO( "Transmission done \n" );
-            SMTC_HAL_TRACE_INFO( "Payload: \n", readValue );
             break;
 
         case SMTC_MODEM_EVENT_DOWNDATA:
@@ -550,6 +568,18 @@ static void gpio_led_test_func()
     }
 }
 
+static void send_uplink_DHT11_on_port( uint8_t port )
+// EHOP 24.04.24: Transform and send DHT11 data
+{
+    // Send uplink on port xxx
+    uint8_t buff[2] = { 0 };
+    buff[0] = temperature;
+    buff[1] = humidity;
+
+    ASSERT_SMTC_MODEM_RC( smtc_modem_request_uplink( STACK_ID, port, false, buff, 2 ) );
+
+}
+
 static void send_uplink_moisture_on_port( uint8_t port )
 // EHOP 25.04.24: Transform and send moisture data
 {
@@ -604,16 +634,16 @@ static void MX_ADC1_Init(void)
   ADC_Init.Init.OversamplingMode = DISABLE;
   if (HAL_ADC_Init(&ADC_Init) != HAL_OK)
   {
-    //Error_Handler();
+    Error_Handler();
   }
 
   /** Configure the ADC multi-mode
   */
   multimode.Mode = ADC_MODE_INDEPENDENT;
-  //if (HAL_ADCEx_MultiModeConfigChannel(&ADC_Init, &multimode) != HAL_OK)
-  //{
-    //Error_Handler();
-  //}
+  if (HAL_ADCEx_MultiModeConfigChannel(&ADC_Init, &multimode) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   /** Configure Regular Channel
   */
@@ -625,7 +655,7 @@ static void MX_ADC1_Init(void)
   sConfig.Offset = 0;
   if (HAL_ADC_ConfigChannel(&ADC_Init, &sConfig) != HAL_OK)
   {
-    //Error_Handler();
+    Error_Handler();
   }
   /* USER CODE BEGIN ADC1_Init 2 */
 
