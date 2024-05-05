@@ -158,7 +158,7 @@ static const uint8_t user_app_key[16]     = USER_LORAWAN_APP_KEY;
  * @brief Periodical uplink alarm delay in seconds
  */
 #ifndef PERIODICAL_UPLINK_DELAY_S
-#define PERIODICAL_UPLINK_DELAY_S 60
+#define PERIODICAL_UPLINK_DELAY_S 1800
 #endif
 
 /*
@@ -579,17 +579,8 @@ static void send_uplink_moisture_on_port( uint8_t port )
   */
 static void MX_ADC1_Init(void)
 {
-
-  /* USER CODE BEGIN ADC1_Init 0 */
-
-  /* USER CODE END ADC1_Init 0 */
-
   ADC_MultiModeTypeDef multimode = {0};
   ADC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN ADC1_Init 1 */
-
-  /* USER CODE END ADC1_Init 1 */
 
   /** Common config
   */
@@ -635,10 +626,6 @@ static void MX_ADC1_Init(void)
   {
     //Error_Handler();
   }
-  
-  /* USER CODE BEGIN ADC1_Init 2 */
-
-  /* USER CODE END ADC1_Init 2 */
 
 }    
 
