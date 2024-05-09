@@ -63,7 +63,7 @@ extern "C" {
     }
 #define USER_LORAWAN_JOIN_EUI                          \
     {                                                  \
-        0x6C, 0x49, 0x82, 0x09, 0x01, 0x01, 0x01, 0x01 \
+        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01 \
     }
 #define USER_LORAWAN_GEN_APP_KEY                                                                       \
     {                                                                                                  \

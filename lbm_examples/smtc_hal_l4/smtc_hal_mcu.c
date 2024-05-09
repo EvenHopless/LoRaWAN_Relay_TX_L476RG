@@ -249,26 +249,12 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
   //RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
   if(hadc->Instance==ADC1)
   {
-  /* USER CODE BEGIN ADC1_MspInit 0 */
 
-  /* USER CODE END ADC1_MspInit 0 */
-
-  /** Initializes the peripherals clock
-  */
+    /** Initializes the peripherals clock
+    */
     //PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
-    //PeriphClkInit.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
-    //PeriphClkInit.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_HSI;
-    //PeriphClkInit.PLLSAI1.PLLSAI1M = 1;
-    //PeriphClkInit.PLLSAI1.PLLSAI1N = 8;
-    //PeriphClkInit.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7;
-    //PeriphClkInit.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2;
-    //PeriphClkInit.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2;
-    //PeriphClkInit.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_ADC1CLK;
-    
-    //if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-    //{
-      //Error_Handler();
-    //}
+    //PeriphClkInit.PLLSAI1.PLLSAI1ClockOut = RCC_ADCCLKSOURCE_SYSCLK;
+    //HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
 
     /* Peripheral clock enable */
     __HAL_RCC_ADC_CLK_ENABLE();
@@ -282,9 +268,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* USER CODE BEGIN ADC1_MspInit 1 */
+    // Configure PB_13 as Output
+    hal_gpio_init_out( PA_13, 0);
 
-  /* USER CODE END ADC1_MspInit 1 */
   }
 
 }
@@ -367,10 +353,6 @@ static void system_clock_config( void )
 
     // Enable Power Clock
     __HAL_RCC_PWR_CLK_ENABLE( );
-
-    // Peripheral clock enable
-    //__HAL_RCC_ADC_CLK_ENABLE();
-    //__HAL_RCC_GPIOB_CLK_ENABLE();
 
     // Ensure that HSI is wake-up system clock
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG( RCC_STOP_WAKEUPCLOCK_HSI );

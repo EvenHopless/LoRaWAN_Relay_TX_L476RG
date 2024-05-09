@@ -210,7 +210,7 @@ static void user_button_callback( void* context );
 /**
  * @brief Send the 32bits uplink counter on chosen port
  */
-static void send_uplink_counter_on_port( uint8_t port );
+//static void send_uplink_counter_on_port( uint8_t port );
 
 // EHOP Send uplink fuction for Humidity sensor
 /**
@@ -222,14 +222,14 @@ static void send_uplink_moisture_on_port( uint8_t port );
 /**
  * @brief Test function for GPIO pins
  */
-static void gpio_led_test_func();
+//static void gpio_led_test_func();
 
 // EHOP Init fuction for ADC1
 /**
  * @brief Fuction for init of ADC1
  */
 static void MX_ADC1_Init(void);
-static void HAL_ADC_ConvtCpltCallback(ADC_HandleTypeDef *hadc);
+//static void HAL_ADC_ConvtCpltCallback(ADC_HandleTypeDef *hadc);
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
@@ -261,8 +261,6 @@ void main_periodical_uplink_relay_tx( void )
     };
     hal_gpio_init_in( EXTI_BUTTON, BSP_GPIO_PULL_MODE_NONE, BSP_GPIO_IRQ_MODE_FALLING, &nucleo_blue_button );
 
-    // EHOP 23.04.24: Configure PB_13 as Output
-    //hal_gpio_init_out( PB_13, 0);
     // EHOP 25.04.24: Initialize ADC1
     MX_ADC1_Init();
     //HAL_ADC_Start( &ADC_Init );
@@ -522,7 +520,7 @@ static void user_button_callback( void* context )
         user_button_is_press    = true;
     }
 }
-
+/*
 static void send_uplink_counter_on_port( uint8_t port )
 {
     // Send uplink counter on port 102
@@ -549,16 +547,22 @@ static void gpio_led_test_func()
         hal_gpio_set_value( PB_13, 0);
     }
 }
-
+*/
 static void send_uplink_moisture_on_port( uint8_t port )
 // EHOP 25.04.24: Transform and send moisture data
 {
     //HAL_ADC_ConvtCpltCallback( &ADC_Init );
-    HAL_ADC_Start( &ADC_Init );
-    HAL_ADC_PollForConversion( &ADC_Init, 100);
-    readValue = HAL_ADC_GetValue( &ADC_Init );
-    hal_trace_print_var( "readValue: %u\n", readValue );
-    HAL_ADC_Stop( &ADC_Init );
+    hal_gpio_set_value( PA_13, 1); // Power up moisture sensor
+    HAL_Delay(5000); // Wait for power to stabilize
+
+    HAL_ADC_Start( &ADC_Init ); // Start ADC
+    HAL_ADC_PollForConversion( &ADC_Init, 100); // Start polling
+    readValue = HAL_ADC_GetValue( &ADC_Init ); // Write to readValue variable
+    hal_trace_print_var( "readValue: %u\n", readValue ); // Print value to tracelog
+    HAL_ADC_Stop( &ADC_Init ); // Stop ADC    
+    
+    hal_gpio_set_value( PA_13, 0); // Power off moisture sensor
+
     // Send uplink on port xxx
     uint8_t buff[2] = { 0 };
     
@@ -569,7 +573,6 @@ static void send_uplink_moisture_on_port( uint8_t port )
     buff[1] = readValue & 0xFF; // Mask out the least significant byte
 
     ASSERT_SMTC_MODEM_RC( smtc_modem_request_uplink( STACK_ID, port, false, buff, 2 ) );
-
 }
 
 /**
@@ -628,10 +631,10 @@ static void MX_ADC1_Init(void)
   }
 
 }    
-
+/*
 void HAL_ADC_ConvtCpltCallback(ADC_HandleTypeDef* hadc) {
   readValue = HAL_ADC_GetValue( &ADC_Init );
   hal_trace_print_var( "readValue: %u\n", readValue );
 }
-
+*/
 /* --- EOF ------------------------------------------------------------------ */
