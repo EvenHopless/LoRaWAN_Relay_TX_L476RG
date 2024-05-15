@@ -270,7 +270,6 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 
     // Configure PB_13 as Output
     hal_gpio_init_out( PA_13, 0);
-
   }
 
 }

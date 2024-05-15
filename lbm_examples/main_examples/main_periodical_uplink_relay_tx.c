@@ -176,7 +176,7 @@ static smtc_modem_dl_metadata_t rx_metadata     = { 0 };  // Metadata of downlin
 static uint8_t                  rx_remaining    = 0;      // Remaining downlink payload in modem
 
 static volatile bool user_button_is_press = false;  // Flag for button status
-static uint32_t      uplink_counter       = 0;      // uplink raising counter
+//static uint32_t      uplink_counter       = 0;      // uplink raising counter
 static uint16_t      readValue            = 0;      // Value read from the moisture sensor
 ADC_HandleTypeDef    ADC_Init;                      // ADC type handler variable
 
@@ -218,18 +218,12 @@ static void user_button_callback( void* context );
  */
 static void send_uplink_moisture_on_port( uint8_t port );
 
-// EHOP GPIO LED test function
-/**
- * @brief Test function for GPIO pins
- */
-//static void gpio_led_test_func();
-
 // EHOP Init fuction for ADC1
 /**
  * @brief Fuction for init of ADC1
  */
 static void MX_ADC1_Init(void);
-//static void HAL_ADC_ConvtCpltCallback(ADC_HandleTypeDef *hadc);
+
 /*
  * -----------------------------------------------------------------------------
  * --- PUBLIC FUNCTIONS DEFINITION ---------------------------------------------
@@ -263,8 +257,7 @@ void main_periodical_uplink_relay_tx( void )
 
     // EHOP 25.04.24: Initialize ADC1
     MX_ADC1_Init();
-    //HAL_ADC_Start( &ADC_Init );
-    //HAL_ADC_Start_IT( &ADC_Init );
+    
     // Init done: enable interruption
     hal_mcu_enable_irq( );
 
@@ -272,10 +265,6 @@ void main_periodical_uplink_relay_tx( void )
 
     while( 1 )
     {
-        // Update sensor values
-        //HAL_ADC_PollForConversion( &ADC_Init, 100);
-        //readValue = HAL_ADC_GetValue( &ADC_Init );
-
         // Check button
         if( user_button_is_press == true )
         {
@@ -535,23 +524,10 @@ static void send_uplink_counter_on_port( uint8_t port )
 
 }
 
-static void gpio_led_test_func()
-{
-    // EHOP 23.04.24: Toggle LED
-    if (hal_gpio_get_value( PB_13 ) == 0)
-    {
-        hal_gpio_set_value( PB_13, 1);
-    }
-    else
-    {
-        hal_gpio_set_value( PB_13, 0);
-    }
-}
 */
 static void send_uplink_moisture_on_port( uint8_t port )
 // EHOP 25.04.24: Transform and send moisture data
 {
-    //HAL_ADC_ConvtCpltCallback( &ADC_Init );
     hal_gpio_set_value( PA_13, 1); // Power up moisture sensor
     HAL_Delay(5000); // Wait for power to stabilize
 
@@ -602,19 +578,13 @@ static void MX_ADC1_Init(void)
   ADC_Init.Init.DMAContinuousRequests = DISABLE;
   ADC_Init.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   ADC_Init.Init.OversamplingMode = DISABLE;
-  
-  if (HAL_ADC_Init(&ADC_Init) != HAL_OK)
-  {
-    //Error_Handler();
-  }
+  HAL_ADC_Init(&ADC_Init);
+
 
   /** Configure the ADC multi-mode
   */
   multimode.Mode = ADC_MODE_INDEPENDENT;
-  if (HAL_ADCEx_MultiModeConfigChannel(&ADC_Init, &multimode) != HAL_OK)
-  {
-    //Error_Handler();
-  }
+  HAL_ADCEx_MultiModeConfigChannel(&ADC_Init, &multimode);
 
   /** Configure Regular Channel
   */
@@ -624,17 +594,7 @@ static void MX_ADC1_Init(void)
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
-  
-  if (HAL_ADC_ConfigChannel(&ADC_Init, &sConfig) != HAL_OK)
-  {
-    //Error_Handler();
-  }
+  HAL_ADC_ConfigChannel(&ADC_Init, &sConfig);
 
 }    
-/*
-void HAL_ADC_ConvtCpltCallback(ADC_HandleTypeDef* hadc) {
-  readValue = HAL_ADC_GetValue( &ADC_Init );
-  hal_trace_print_var( "readValue: %u\n", readValue );
-}
-*/
 /* --- EOF ------------------------------------------------------------------ */
